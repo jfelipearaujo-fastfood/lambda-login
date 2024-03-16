@@ -1,6 +1,7 @@
 # Fast-Food Lambda Auth
 
 <!-- BEGIN_TF_DOCS -->
+
 ## Requirements
 
 | Name | Version |
