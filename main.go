@@ -141,6 +141,12 @@ func createJwtToken(user *User) (string, error) {
 	return token.SignedString(signingKey)
 }
 
+func validateJwtToken(token string, key []byte) (*jwt.Token, error) {
+	return jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		return key, nil
+	})
+}
+
 func handleAuth(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var request Request
 
@@ -199,7 +205,7 @@ func handleAuth(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRespon
 func router(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	slog.Info("received a request", "path", req.Path, "method", req.HTTPMethod)
 
-	if req.Path == "/auth" && req.HTTPMethod == "POST" {
+	if req.Path == "/login" && req.HTTPMethod == "POST" {
 		return handleAuth(req)
 	}
 
