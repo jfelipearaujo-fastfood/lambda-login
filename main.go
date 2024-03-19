@@ -41,10 +41,49 @@ type Request struct {
 	Password string `json:"pass"`
 }
 
+type Response struct {
+	Status      int    `json:"status"`
+	Message     string `json:"message"`
+	AccessToken string `json:"access_token,omitempty"`
+}
+
 type User struct {
 	Id         string `json:"Id"`
 	DocumentId string `json:"DocumentId"`
 	Password   string `json:"Password"`
+}
+
+func init() {
+	opts := &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}
+
+	handler := slog.NewTextHandler(os.Stdout, opts)
+
+	log := slog.New(handler)
+
+	slog.SetDefault(log)
+}
+
+func buildResponse(status int, message string, token string) events.APIGatewayProxyResponse {
+	response := Response{
+		Status:      status,
+		Message:     message,
+		AccessToken: token,
+	}
+
+	body, err := json.Marshal(response)
+	if err != nil {
+		slog.Error("error while trying to marshal the response", "error", err)
+	}
+
+	return events.APIGatewayProxyResponse{
+		StatusCode: status,
+		Body:       string(body),
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+	}
 }
 
 func getUserByCpf(cpf string) (*User, error) {
@@ -60,7 +99,7 @@ func getUserByCpf(cpf string) (*User, error) {
 		return nil, err
 	}
 
-	statement, err := conn.Query("SELECT Id, DocumentId, Password FROM clients WHERE DocumentId = $1", cpf)
+	statement, err := conn.Query(`SELECT c."Id", c."DocumentId", c."Password" FROM clients c WHERE c."DocumentId" = $1`, cpf)
 	if err != nil {
 		slog.Error("error while trying to execute the query", "error", err)
 		return nil, err
@@ -79,6 +118,14 @@ func getUserByCpf(cpf string) (*User, error) {
 
 func maskCpf(cpf string) string {
 	return strings.ReplaceAll(cpf, cpf[3:(len(cpf)-2)], strings.Repeat("*", len(cpf)-5))
+}
+
+func clearSpecialChars(cpf string) string {
+	charsToRemove := []string{"/", ".", "-", " "}
+	for _, char := range charsToRemove {
+		cpf = strings.ReplaceAll(cpf, char, "")
+	}
+	return cpf
 }
 
 func checkPassword(password string, passwordHashed string) error {
@@ -102,75 +149,51 @@ func handleAuth(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRespon
 	slog.Debug("unmarshalling the request")
 	if err := json.Unmarshal([]byte(req.Body), &request); err != nil {
 		slog.Error("error while trying to unmarshal the request", "error", err)
-		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusUnauthorized,
-			Body:       "Invalid CPF or Password",
-		}, nil
+		return buildResponse(http.StatusUnauthorized, "error to parse the request body", ""), nil
 	}
 
-	cpf := cpf.NewCPF(request.CPF)
+	cpf := cpf.NewCPF(clearSpecialChars(request.CPF))
 
 	slog.Debug("validating the cpf")
 	if !cpf.IsValid() {
 		slog.Error("invalid cpf", "cpf", request.CPF)
-		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusUnauthorized,
-			Body:       "Invalid CPF or Password",
-		}, nil
+		return buildResponse(http.StatusUnauthorized, "invalid CPF or password", ""), nil
 	}
 
 	slog.Debug("validating the password")
 	if len(request.Password) < 8 {
 		slog.Error("invalid password", "password_length", len(request.Password))
-		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusUnauthorized,
-			Body:       "Invalid CPF or Password",
-		}, nil
+		return buildResponse(http.StatusUnauthorized, "invalid CPF or password", ""), nil
 	}
 
 	slog.Debug("getting the user by cpf")
 	user, err := getUserByCpf(request.CPF)
 	if err != nil {
 		slog.Error("error while trying to get the user by cpf", "error", err)
-		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusUnauthorized,
-			Body:       "Invalid CPF or Password",
-		}, nil
+		return buildResponse(http.StatusUnauthorized, "invalid CPF or password", ""), nil
 	}
 
 	if user == nil {
 		slog.Error("user not found", "cpf", maskCpf(request.CPF))
-		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusUnauthorized,
-			Body:       "Invalid CPF or Password",
-		}, nil
+		return buildResponse(http.StatusUnauthorized, "invalid CPF or password", ""), nil
 	}
 
 	slog.Debug("checking the password hash")
 	if err := checkPassword(request.Password, user.Password); err != nil {
 		slog.Error("invalid password, hash not match", "cpf", maskCpf(request.CPF))
-		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusBadRequest,
-			Body:       "Invalid CPF or Password",
-		}, nil
+		return buildResponse(http.StatusUnauthorized, "invalid CPF or password", ""), nil
 	}
 
 	slog.Debug("creating the jwt token")
 	token, err := createJwtToken(user)
 	if err != nil {
 		slog.Error("error while trying to create the jwt token", "error", err)
-		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusBadRequest,
-			Body:       "Internal Server Error",
-		}, nil
+		return buildResponse(http.StatusInternalServerError, "internal server error", token), nil
 	}
 
-	slog.Debug("completed", "token", token)
+	slog.Info("user authenticated successfully", "cpf", maskCpf(request.CPF))
 
-	return events.APIGatewayProxyResponse{
-		StatusCode: http.StatusCreated,
-		Body:       token,
-	}, nil
+	return buildResponse(http.StatusCreated, "success", token), nil
 }
 
 func router(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -180,10 +203,7 @@ func router(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, 
 		return handleAuth(req)
 	}
 
-	return events.APIGatewayProxyResponse{
-		StatusCode: http.StatusMethodNotAllowed,
-		Body:       http.StatusText(http.StatusMethodNotAllowed),
-	}, nil
+	return buildResponse(http.StatusMethodNotAllowed, "method not allowed", ""), nil
 }
 
 func main() {
