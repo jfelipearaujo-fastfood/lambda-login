@@ -2,7 +2,7 @@ variable "tags" {
   type        = map(string)
   description = "The default tags to use for AWS resources"
   default = {
-    App = "lambda-auth"
+    App = "lambda-login"
   }
 }
 
