@@ -11,7 +11,7 @@ module "secret" {
 module "auth" {
   source = "./modules/auth"
 
-  lambda_name = "auth"
+  lambda_name = "login"
 
   sign_key = module.secret.sign_key
 
