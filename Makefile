@@ -86,3 +86,7 @@ gen-scaffold-bdd:
 test:
 	@echo "Running tests..."
 	@go test -count=1 ./src/... -v
+
+test-bdd:
+	@echo "Running BDD tests..."
+	@go test -count=1 ./tests/... -test.v -test.run ^TestFeatures$
