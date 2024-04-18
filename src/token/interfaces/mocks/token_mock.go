@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	entities "github.com/jsfelipearaujo/lambda-login/src/entities"
+	entities "github.com/jfelipearaujo-org/lambda-login/src/entities"
 
 	mock "github.com/stretchr/testify/mock"
 )

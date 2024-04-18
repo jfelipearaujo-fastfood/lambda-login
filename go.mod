@@ -1,4 +1,4 @@
-module github.com/jsfelipearaujo/lambda-login
+module github.com/jfelipearaujo-org/lambda-login
 
 go 1.21.3
 

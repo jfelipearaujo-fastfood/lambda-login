@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/jsfelipearaujo/lambda-login/src/entities"
+	"github.com/jfelipearaujo-org/lambda-login/src/entities"
 )
 
 var (

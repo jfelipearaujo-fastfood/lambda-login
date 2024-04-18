@@ -3,7 +3,7 @@ package token
 import (
 	"testing"
 
-	"github.com/jsfelipearaujo/lambda-login/src/entities"
+	"github.com/jfelipearaujo-org/lambda-login/src/entities"
 )
 
 func TestCreateJwtToken(t *testing.T) {
