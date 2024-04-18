@@ -7,7 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/jsfelipearaujo/lambda-login/src/entities"
+	"github.com/jfelipearaujo-org/lambda-login/src/entities"
 )
 
 func InvalidRequestBody() events.APIGatewayProxyResponse {

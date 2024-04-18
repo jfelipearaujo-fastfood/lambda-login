@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/jsfelipearaujo/lambda-login/src/entities"
-	"github.com/jsfelipearaujo/lambda-login/src/providers/interfaces/mocks"
+	"github.com/jfelipearaujo-org/lambda-login/src/entities"
+	"github.com/jfelipearaujo-org/lambda-login/src/providers/interfaces/mocks"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 )

@@ -3,7 +3,7 @@ package providers
 import (
 	"time"
 
-	"github.com/jsfelipearaujo/lambda-login/src/providers/interfaces"
+	"github.com/jfelipearaujo-org/lambda-login/src/providers/interfaces"
 )
 
 type TimeProvider struct {
