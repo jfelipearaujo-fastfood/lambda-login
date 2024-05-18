@@ -3,7 +3,6 @@ package database
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/jfelipearaujo-org/lambda-login/internal/entities"
@@ -18,12 +17,6 @@ const (
 )
 
 var (
-	dbHost = os.Getenv("DB_HOST")
-	dbPort = os.Getenv("DB_PORT")
-	dbName = os.Getenv("DB_NAME")
-	dbUser = os.Getenv("DB_USER")
-	dbPass = os.Getenv("DB_PASS")
-
 	ErrUserNotFound = errors.New("user not found")
 )
 
@@ -40,7 +33,7 @@ func NewDatabase(db *sql.DB, timeProvider interfaces.TimeProvider) *Database {
 }
 
 func NewDatabaseFromConnStr(timeProvider interfaces.TimeProvider) *Database {
-	db, err := sql.Open(engine, fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", dbHost, dbPort, dbUser, dbPass, dbName))
+	db, err := sql.Open(engine, os.Getenv("DB_URL"))
 	if err != nil {
 		panic(err)
 	}
