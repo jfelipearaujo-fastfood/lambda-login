@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	"github.com/jfelipearaujo-org/lambda-login/src/entities"
+	"github.com/jfelipearaujo-org/lambda-login/internal/entities"
 )
 
 type Token interface {

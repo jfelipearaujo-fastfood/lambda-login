@@ -1,4 +1,4 @@
-# Fast-Food Lambda Login
+# Lambda Login
 
 This project its responsible for create a JWT token for a registered user in the database.
 

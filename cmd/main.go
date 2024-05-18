@@ -6,12 +6,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/jfelipearaujo-org/lambda-login/src/database"
-	"github.com/jfelipearaujo-org/lambda-login/src/handlers"
-	"github.com/jfelipearaujo-org/lambda-login/src/hashs"
-	"github.com/jfelipearaujo-org/lambda-login/src/providers"
-	"github.com/jfelipearaujo-org/lambda-login/src/router"
-	"github.com/jfelipearaujo-org/lambda-login/src/token"
+	"github.com/jfelipearaujo-org/lambda-login/internal/database"
+	"github.com/jfelipearaujo-org/lambda-login/internal/handlers"
+	"github.com/jfelipearaujo-org/lambda-login/internal/hashs"
+	"github.com/jfelipearaujo-org/lambda-login/internal/providers"
+	"github.com/jfelipearaujo-org/lambda-login/internal/router"
+	"github.com/jfelipearaujo-org/lambda-login/internal/token"
 	_ "github.com/lib/pq"
 
 	"github.com/aws/aws-lambda-go/events"
